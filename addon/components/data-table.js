@@ -1,9 +1,8 @@
 import Ember from 'ember';
-import layout from '../templates/data-table';
 
 export default Ember.Component.extend({
-  layout,
   tagName:'table',
+  classNames:'table table-striped table-bordered table-hover table-responsive table-condensed',
 
   showHeader:true,
   showFooter:false,
@@ -14,20 +13,12 @@ export default Ember.Component.extend({
   isAllSelected:Ember.computed.empty('notSelectedRows'),
 
   selectionChanged:Ember.K,
-  classNames:['contextual-data-table'],
 
-  selectedRows:Ember.computed('data.[]',{
-    get(){
-      return Ember.A();
-    },
-    set(key, value){
-      let arr = Ember.A();
-      if(Ember.isArray(value)){
-        arr.pushObjects(value);
-      }
-      return arr;
-    }
-  }),
+  init(){
+    this._super(...arguments);
+    this.set('selectedRows',Ember.makeArray());
+    this.set('sortedColumns',Ember.makeArray());
+  },
 
   actions:{
     selected:function(row){
@@ -45,13 +36,30 @@ export default Ember.Component.extend({
       if(this.get('selectionMode')==='single'){
         return false;
       }
-      this.get('selectedRows').clear();
       this.get('selectedRows').pushObjects(this.get('data'));
       this.get('selectionChanged')(this.get('selectedRows'));
     },
     deselectAll:function(){
       this.get('selectedRows').clear();
       this.get('selectionChanged')(this.get('selectedRows'));
+    },
+    sortRequested:function(sortKey){
+      let sortedColumns = this.get('sortedColumns');
+      let sortDefinition = sortedColumns.findBy('sortKey', sortKey);
+      sortedColumns.removeObject(sortDefinition);
+      if(sortDefinition){
+        let sortDirection = sortDefinition.sortDirection;
+        if(sortDirection==='asc'){
+          sortDefinition.sortDirection = 'desc';
+          sortedColumns.pushObject(sortDefinition);
+        }else{
+          sortDefinition = undefined;
+        }
+      }else{
+        sortDefinition = {sortDirection:'asc', sortKey:sortKey};
+        sortedColumns.pushObject(sortDefinition);
+      }
+      (this.get('sortChanged')||Ember.K)(sortedColumns);
     }
   }
 });

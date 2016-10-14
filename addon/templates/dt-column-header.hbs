@@ -1,5 +1,8 @@
-{{#if (if hasBlock (if defaultHeader false true) false)}}
-    {{yield (hash header=true)}}
+{{#if (if hasBlock (if header false true) false)}}
+  {{yield (hash header=true)}}
 {{else}}
-    {{name}}
+  {{name}}
+{{/if}}
+{{#if sortable}}
+  <span class={{iconClass}} aria-hidden="true"></span>
 {{/if}}
